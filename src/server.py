@@ -54,6 +54,10 @@ def main():
             ['ice_server', 'server_id']),
         'uptime': node.Gauge('mumble_uptime', 'Virtual uptime',
             ['ice_server', 'server_id']),
+        'chancount': node.Gauge('mumble_channels', 'Number of channels',
+            ['ice_server', 'server_id']),
+        'bancount': node.Gauge('mumble_users_banned', 'Number of banned users',
+            ['ice_server', 'server_id']),
     }
 
     if args.verbose:
@@ -69,12 +73,17 @@ def main():
             for server in meta.getBootedServers():
                 g_user = len(server.getUsers())
                 g_uptime = server.getUptime()
-                logger.debug('mumble_user_connected: %d' % g_user)
+                g_chancount = len(server.getChannels())
+                g_bancount = len(server.getBans())
+                logger.debug('mumble_users_connected: %d' % g_user)
                 logger.debug('mumble_uptime: %d' % g_uptime)
+                logger.debug('mumble_channels: %d' % g_chancount)
+                logger.debug('mumble_users_banned: %d' % g_bancount)
                 label_values = [ice_server, server.id()]
                 gauges['users'].labels(*label_values).set(g_user)
                 gauges['uptime'].labels(*label_values).set(g_uptime)
-
+                gauges['chancount'].labels(*label_values).set(g_chancount)
+                gauges['bancount'].labels(*label_values).set(g_bancount)
             time_to_wait = args.interval - (time.time() - t1)
             if time_to_wait > 0:
                 time.sleep(time_to_wait)
